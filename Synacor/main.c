@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     FILE *BinFile; // The pointer for the binary input file
     BinFile = fopen("C:\\Users\\Josh\\Desktop\\Synacor\\challenge.bin", "rb"); // Open as read-only, binary
     fread(Memory, sizeof(Word), 32768, BinFile); //Reads the first 32768 Words from the Binary File, and dumps them in main memory. Hopefully.
-    
+
     while(IsRunning)
     {
         opcode = Memory[ProgramCounter]; //Set the opcode to whatever's currently in the memory at PC address. 
@@ -42,8 +42,7 @@ int main(int argc, char **argv)
             break;
             
             case 7: // Jump if nonzero
-            
-            Memory[ProgramCounter+1] = Memory[ProgramCounter+1] % 32768;                                                  
+                                              
             printf("Checking value at %u for nonzero jump to %u: %u\n", ProgramCounter+1, Memory[ProgramCounter+2], Memory[ProgramCounter+1]);                            
             if ((Memory[ProgramCounter+1]) != 0)
             {
@@ -58,7 +57,6 @@ int main(int argc, char **argv)
             
             case 8: // Jump if zero
             
-            Memory[ProgramCounter+1] = Memory[ProgramCounter+1] % 32768;     
             printf("Checking value at %u for zero jump to %u: %u\n", ProgramCounter+1, Memory[ProgramCounter+2], Memory[ProgramCounter+1]);    
 
             if ( (Memory[ProgramCounter+1])== 0)
