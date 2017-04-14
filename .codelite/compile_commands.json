@@ -1,0 +1,5 @@
+[{
+  "file": "C:\\Users\\Josh\\Documents\\Synacor\\Synacor\\main.c",
+  "directory": "C:\\Users\\Josh\\Documents\\Synacor\\Synacor",
+  "command": "F:/TDM-GCC-64/bin/gcc.exe -c C:\\Users\\Josh\\Documents\\Synacor\\Synacor\\main.c -o C:\\Users\\Josh\\Documents\\Synacor\\Synacor\\main.c.o  -g  -O0  -Wall -I. -I."
+ }]
