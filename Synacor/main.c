@@ -29,6 +29,10 @@ int main(int argc, char **argv)
     while(IsRunning)
     {
         opcode = Memory[ProgramCounter]; //Set the opcode to whatever's currently in the memory at PC address. 
+        Word* JumpAddress;
+        Word* TempValue1;
+        Word* TempValue2;
+        Word* TempValue3;
 
         switch(opcode)
         {
@@ -37,13 +41,28 @@ int main(int argc, char **argv)
             printf("Exiting.");
             break;
             
-            case 6: // Jump
+            case 1: // Set
+        
+            TempValue1 = &Memory[ProgramCounter+1]; // The address of the register we're setting
+            TempValue2 = &Memory[ProgramCounter+2]; // The address of the value we're setting the register to
+            printf("Setting %u to %u\n", *TempValue1, *TempValue2);
+            Memory[*TempValue1] = *TempValue2;
+            printf("%u is now %u\n", *TempValue1, *TempValue1);
+            ProgramCounter += 3;
+            break;
+        
+            case 6: // Jump 
+            
             ProgramCounter = Memory[ProgramCounter+1];
             break;
             
             case 7: // Jump if nonzero
-                                              
-            printf("Checking value at %u for nonzero jump to %u: %u\n", ProgramCounter+1, Memory[ProgramCounter+2], Memory[ProgramCounter+1]);                            
+            
+            JumpAddress = &Memory[ProgramCounter+2];
+            TempValue1 = &Memory[ProgramCounter+1]; // The address to check the nonzero-ness of
+            RegisterCheck(JumpAddress, Registers);    
+            RegisterCheck(TempValue1, Registers);                                                 
+            printf("Checking value at %u for nonzero jump to %u: %u\n", ProgramCounter+1, *JumpAddress, *TempValue1);                            
             if ((Memory[ProgramCounter+1]) != 0)
             {
                 printf("Jumping to %u\n", Memory[ProgramCounter+2]);               
@@ -57,6 +76,10 @@ int main(int argc, char **argv)
             
             case 8: // Jump if zero
             
+            JumpAddress = &Memory[ProgramCounter+2];
+            TempValue1 = &Memory[ProgramCounter+1]; // The address to check the zero-ness of
+            RegisterCheck(JumpAddress, Registers);    
+            RegisterCheck(TempValue1, Registers);   
             printf("Checking value at %u for zero jump to %u: %u\n", ProgramCounter+1, Memory[ProgramCounter+2], Memory[ProgramCounter+1]);    
 
             if ( (Memory[ProgramCounter+1])== 0)
@@ -71,8 +94,12 @@ int main(int argc, char **argv)
             }
             break;
             
+            case 9: // ADD
+            break;
+            
             case 19: // Reads a byte from the next address and prints it to the terminal as an ASCII character.
-            printf(&Memory[ProgramCounter+1]);
+            TempValue1 = &Memory[ProgramCounter+1]; // Address of the character to print
+            printf(TempValue1);
             ProgramCounter += 2;
             break;
             
@@ -103,3 +130,14 @@ void MallocCheck(void *MallocAddress) // Checks if a malloc was successful
         return;
     }
 }   
+
+void RegisterCheck(Word* CheckValue, Word** Registers[]) // When a literal integer is between 32768 and 32775, it must instead refer to the value held in the corresponding
+// register rather than the literal value. This function makes sure this is enforced. Lazy hack. Don't like.
+
+{
+   if (*CheckValue >= 32768)    
+   {
+       *CheckValue = *Registers[*CheckValue-32768];
+   }
+   return;
+}
