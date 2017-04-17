@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Session Name="C:\Users\Josh\Documents\Synacor\Synacor.workspace">
+<Session Name="C:\Users\Josh\Documents\Synacor\Synacor\Synacor.workspace">
   <int Value="0" Name="m_selectedTab"/>
-  <wxString Value="C:\Users\Josh\Documents\Synacor\Synacor.workspace" Name="m_workspaceName"/>
+  <wxString Value="C:\Users\Josh\Documents\Synacor\Synacor\Synacor.workspace" Name="m_workspaceName"/>
   <TabInfoArray Name="TabInfoArray">
     <TabInfo>
-      <wxString Value="C:\Users\Josh\Documents\Synacor\Synacor\main.c" Name="FileName"/>
-      <int Value="34" Name="FirstVisibleLine"/>
-      <int Value="45" Name="CurrentLine"/>
+      <wxString Value="C:\Users\Josh\Documents\Synacor\Synacor\Synacor\main.c" Name="FileName"/>
+      <int Value="0" Name="FirstVisibleLine"/>
+      <int Value="0" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>

@@ -20,7 +20,9 @@ int main(int argc, char **argv)
         &Memory[32774],
         &Memory[32775]
     };
-    Word *Stack = (Word *) malloc(4); // The stack. Initially allocated with enough memory for 2 addresses. Will reallocate on the fly.
+    Word *Stack = (Word *) calloc(4,2); // The stack. Initially allocated with enough memory for 2 addresses. Will reallocate on the fly.
+    int StackIndex = 0; // The index of the "top" of the stack, and as such also the total size of it.
+    int *StackIndexPtr = &StackIndex;
     MallocCheck(Stack); // Make sure that the Stack was allocated okay, exit the program otherwise. This'll pop up a lot.
     FILE *BinFile; // The pointer for the binary input file
     BinFile = fopen("C:\\Users\\Josh\\Desktop\\Synacor\\challenge.bin", "rb"); // Open as read-only, binary
@@ -28,6 +30,7 @@ int main(int argc, char **argv)
 
     while(IsRunning)
     {
+        printf("$%u: ", ProgramCounter);
         opcode = Memory[ProgramCounter]; //Set the opcode to whatever's currently in the memory at PC address. 
         Word* JumpAddress;
         Word* TempValue1;
@@ -50,7 +53,57 @@ int main(int argc, char **argv)
             printf("%u is now %u\n", *TempValue1, *TempValue1);
             ProgramCounter += 3;
             break;
-        
+            
+            case 2: // Push        
+            TempValue1 = &Memory[ProgramCounter+1]; // The value we're pushing
+            RegisterCheck(TempValue1, Registers);
+            Push(Stack, StackIndexPtr, TempValue1);
+            ResizeStack(StackIndex, Stack);            
+            printf("\n Current top stack value: %d %u\n", StackIndex-1, Stack[StackIndex]);
+            ProgramCounter += 2;
+            break;
+            
+            case 3: // Pop
+            
+            TempValue1 = &Memory[ProgramCounter+1]; // The address to pop to
+            RegisterCheck(TempValue1, Registers);
+            Pop(Stack, StackIndexPtr, TempValue1);
+            ResizeStack(StackIndex, Stack);
+            ProgramCounter += 2;
+            break;
+            
+            case 4: // Eq
+            TempValue1 = &Memory[ProgramCounter+1]; // The address at which to store the result
+            TempValue2 = &Memory[ProgramCounter+2]; // The first number to compare
+            TempValue3 = &Memory[ProgramCounter+3]; // The second number to compare
+            RegisterCheck(TempValue2, Registers);
+            RegisterCheck(TempValue3, Registers);
+            if (*TempValue2 == *TempValue3)
+            {
+                Memory[*TempValue1] = 1;
+            }
+            else{
+                    Memory[*TempValue1] = 0;
+            }
+            ProgramCounter += 4;            
+            break;
+
+            case 5: // gt
+            TempValue1 = &Memory[ProgramCounter+1]; // The address at which to store the result
+            TempValue2 = &Memory[ProgramCounter+2]; // The first number to compare
+            TempValue3 = &Memory[ProgramCounter+3]; // The second number to compare
+            RegisterCheck(TempValue2, Registers);
+            RegisterCheck(TempValue3, Registers);
+            if (*TempValue2 > *TempValue3)
+            {
+                Memory[*TempValue1] = 1;
+            }
+            else{
+                    Memory[*TempValue1] = 0;
+            }
+            ProgramCounter += 4;            
+            break;
+            
             case 6: // Jump 
             
             ProgramCounter = Memory[ProgramCounter+1];
@@ -95,7 +148,104 @@ int main(int argc, char **argv)
             break;
             
             case 9: // ADD
+            TempValue1 = &Memory[ProgramCounter+1]; // The address we'll be storing the result in
+            TempValue2 = &Memory[ProgramCounter+2]; // The first value in our add operation
+            TempValue3 = &Memory[ProgramCounter+3]; // The second value in our add operation
+            RegisterCheck(TempValue2, Registers);
+            RegisterCheck(TempValue3, Registers);
+            Memory[*TempValue1] = (*TempValue2 + *TempValue3) % 32768;
+            ProgramCounter += 4;
             break;
+            
+            case 10 : // Multiply
+            TempValue1 = &Memory[ProgramCounter+1]; // The address we'll be storing the result in
+            TempValue2 = &Memory[ProgramCounter+2]; // The first value in our mult operation
+            TempValue3 = &Memory[ProgramCounter+3]; // The second value in our mult operation
+            RegisterCheck(TempValue2, Registers);
+            RegisterCheck(TempValue3, Registers);
+            Memory[*TempValue1] = (*TempValue2 * *TempValue3) % 32768;
+            ProgramCounter += 4;
+            break;            
+            
+            case 11 : // Modulo
+            TempValue1 = &Memory[ProgramCounter+1]; // The address we'll be storing the result in
+            TempValue2 = &Memory[ProgramCounter+2]; // The first value in our mod operation
+            TempValue3 = &Memory[ProgramCounter+3]; // The second value in our mod operation
+            RegisterCheck(TempValue2, Registers);
+            RegisterCheck(TempValue3, Registers);
+            Memory[*TempValue1] = (*TempValue2 % *TempValue3);
+            ProgramCounter += 4;
+            break;       
+            
+            case 12: // AND
+            TempValue1 = &Memory[ProgramCounter+1]; // The address to store the result in
+            TempValue2 = &Memory[ProgramCounter+2]; // The first value to AND
+            TempValue3 = &Memory[ProgramCounter+3]; // The second value to bitwise AND
+            RegisterCheck(TempValue2, Registers);
+            RegisterCheck(TempValue3, Registers);
+            Memory[*TempValue1] = (*TempValue2 & *TempValue3);
+            ProgramCounter += 4;
+            break;
+            
+            case 13: // OR
+            TempValue1 = &Memory[ProgramCounter+1]; // The address to store the result in
+            TempValue2 = &Memory[ProgramCounter+2]; // The first value to AND
+            TempValue3 = &Memory[ProgramCounter+3]; // The second value to bitwise AND
+            RegisterCheck(TempValue2, Registers);
+            RegisterCheck(TempValue3, Registers);
+            Memory[*TempValue1] = (*TempValue2 | *TempValue3);
+            ProgramCounter += 4;
+            break;
+            
+            case 14: // NOT
+            TempValue1 = &Memory[ProgramCounter+1]; // The address to store the result in
+            TempValue2 = &Memory[ProgramCounter+2]; // The value to inverse
+            RegisterCheck(TempValue2, Registers);
+            Memory[*TempValue1] = ~*TempValue2;
+            Memory[*TempValue1] %= 32768;
+            ProgramCounter += 3;
+            break;
+            
+            case 15: // RMEM: Read memory
+            TempValue1 = &Memory[ProgramCounter+1]; // The address to store at
+            TempValue2 = &Memory[ProgramCounter+2]; // The address to read from         
+            RegisterCheck(TempValue2, Registers);
+            Memory[*TempValue1] = Memory[*TempValue2];
+            ProgramCounter += 3;
+            break;
+            
+            case 16: // WMEM: Write memory
+            TempValue1 = &Memory[ProgramCounter+1]; // The address to store at
+            TempValue2 = &Memory[ProgramCounter+2]; // The read value
+            RegisterCheck(TempValue1, Registers);
+            Memory[*TempValue1] = *TempValue2;
+            ProgramCounter += 3;
+            break;
+            
+            
+            case 17: // CALL
+            Stack[StackIndex] = Memory[ProgramCounter+2];
+            ProgramCounter = Memory[ProgramCounter+1];
+            StackIndex++;
+            ResizeStack(StackIndex, Stack);
+            break;
+            
+            case 18: // Return
+            if (StackIndex == 0)
+            {
+                printf("ERROR: EMPTY STACK.\n");
+                IsRunning = 0;
+            }
+            else
+            { 
+                printf("Popped %u from stack index %u (RETURN)\n", Stack[StackIndex], StackIndex);
+                ProgramCounter = Stack[StackIndex];
+                ResizeStack(StackIndex, Stack);
+                Stack[StackIndex] = 0;
+                StackIndex--;
+            }
+            break;
+
             
             case 19: // Reads a byte from the next address and prints it to the terminal as an ASCII character.
             TempValue1 = &Memory[ProgramCounter+1]; // Address of the character to print
@@ -131,7 +281,7 @@ void MallocCheck(void *MallocAddress) // Checks if a malloc was successful
     }
 }   
 
-void RegisterCheck(Word* CheckValue, Word** Registers[]) // When a literal integer is between 32768 and 32775, it must instead refer to the value held in the corresponding
+void RegisterCheck(Word* CheckValue, Word* Registers[]) // When a literal integer is between 32768 and 32775, it must instead refer to the value held in the corresponding
 // register rather than the literal value. This function makes sure this is enforced. Lazy hack. Don't like.
 
 {
@@ -140,4 +290,38 @@ void RegisterCheck(Word* CheckValue, Word** Registers[]) // When a literal integ
        *CheckValue = *Registers[*CheckValue-32768];
    }
    return;
+}
+
+void ResizeStack(Word StackSize, Word* Stack)
+{
+
+    *Stack = (Word*) realloc(Stack, sizeof(Word)*(StackSize+1));
+    MallocCheck(Stack);
+    return;
+}
+
+void Push(Word* Stack, int* StackIndex, Word* Value)
+{
+    printf("\nStack index is %d\n", *StackIndex);
+    printf("\npush1\n");    
+        Stack[*StackIndex] = *Value;
+    printf("\nStack index is %d\n", *StackIndex);    
+    printf("\npush2\n");       
+    (*StackIndex)++;
+    printf("\nStack index is %d\n", *StackIndex);
+    printf("\npush3\n");       
+    return;
+}
+
+void Pop(Word* Stack, int* StackIndex, Word* Address)
+{
+    if(*StackIndex == 0)
+    {
+        printf("POP ERROR: STACK EMPTY\n");
+        exit(1);
+    }
+    (*StackIndex)--;
+    *Address = Stack[*StackIndex];
+    Stack[*StackIndex] = 0;
+    return;
 }
