@@ -5,8 +5,8 @@
   <TabInfoArray Name="TabInfoArray">
     <TabInfo>
       <wxString Value="C:\Users\Josh\Documents\Synacor\Synacor\main.c" Name="FileName"/>
-      <int Value="274" Name="FirstVisibleLine"/>
-      <int Value="283" Name="CurrentLine"/>
+      <int Value="250" Name="FirstVisibleLine"/>
+      <int Value="242" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
